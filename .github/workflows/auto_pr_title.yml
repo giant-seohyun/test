@@ -4,6 +4,7 @@ on:
   pull_request:
     types:
       - opened
+      - synchronize
 
 jobs:
   auto-pr-title:
@@ -12,9 +13,8 @@ jobs:
     steps:
       - name: Set PR Title
         run: |
-          branch_name=$(echo ${{ github.event.pull_request.head.ref }})
-          title="Automated PR Title for $branch_name"
-          echo "::set-output name=title::${title}"
+          echo "title=$(date +%Y-%m-%d) Automated PR Title" > pr-title.txt
+          echo "::set-output name=title::$(cat pr-title.txt)"
 
       - name: Update PR
         uses: actions/github-script@0.9.0
