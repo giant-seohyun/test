@@ -4,7 +4,6 @@ on:
   pull_request:
     types:
       - opened
-      - synchronize
 
 jobs:
   auto-pr-title:
@@ -14,19 +13,8 @@ jobs:
       - name: Set PR Title
         run: |
           branch_name=$(echo ${{ github.event.pull_request.head.ref }})
-          changed_files=$(git diff --no-index --name-only ${{ github.event.before }} ${{ github.sha }})
-
-          # Extract package name from the changed files
-          package_name=$(grep -oP "package/(\K[^/]+)" <<< "$changed_files" | head -n 1)
-
-          # Check if package name is found
-          if [ -n "$package_name" ] && [ -n "$branch_name" ]; then
-            title="Automated PR Title: $package_name - $branch_name changes"
-            echo "::set-output name=title::${title}"
-          else
-            echo "Unable to detect branch name or package changes. Skipping PR title update."
-            exit 1
-          fi
+          title="Automated PR Title for $branch_name"
+          echo "::set-output name=title::${title}"
 
       - name: Update PR
         uses: actions/github-script@0.9.0
