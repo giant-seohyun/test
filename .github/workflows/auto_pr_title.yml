@@ -1,29 +1,16 @@
-name: Auto PR Title
-
-on:
-  pull_request:
-    types: [opened, reopened]
+name: "Create PR"
+on: push
 
 jobs:
-  auto-pr-title:
+  create-pr-on-push:
+    if: ${{ (contains(github.event.head_commit.message, 'BUG') || contains(github.event.head_commit.message, 'IMP'))  && github.event.pull_request.merged == false }}
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Extract branch name
-        id: extract_branch
-        run: echo "::set-output name=branch_name::$(echo ${{ github.event.pull_request.head.ref }})"
-
-      - name: Set PR Title
-        id: set_pr_title
-        run: echo "::set-output name=title::Auto PR::$(echo ${{ steps.extract_branch.outputs.branch_name }})"
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+      - uses: actions/checkout@1.0.0
+      - name: Create pull request
+        uses: thomaseizinger/create-pull-request@master
         with:
-          title: ${{ steps.set_pr_title.outputs.title }}
-          branch: ${{ github.event.pull_request.head.ref }}
+          GITHUB_TOKEN: ${{ secrets.PAT_CREATE_PULL_REQUEST }}
+          head: ${{ github.ref }}
           base: main
-          token: ${{ secrets.GITHUB_TOKEN }}
+          title: ${{ github.event.head_commit.message }}
