@@ -2,7 +2,7 @@ on: push
 
 jobs:
   pull-request:
-    if: ${{ (contains(github.event.head_commit.message, 'BUG') || contains(github.event.head_commit.message, 'IMP'))  && github.event.pull_request.merged == false }}
+    if: contains(github.event.head_commit.message, 'done')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -23,6 +23,4 @@ jobs:
           pr_body: |
             :crown: *An automated PR*
           pr_template: ".github/pull_request_template.md"
-          pr_draft: true
-          pr_allow_empty: true
           github_token: ${{ secrets.SSH }}
