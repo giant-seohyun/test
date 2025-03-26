@@ -6,6 +6,11 @@ on:
     branches:
       - "main"
 
+# 권한 설정
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   create-release:
     if: github.event.pull_request.merged == true
