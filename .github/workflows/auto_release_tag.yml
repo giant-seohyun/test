@@ -50,10 +50,25 @@ jobs:
       - name: Generate changelog
         id: changelog
         run: |
-          # 최신 태그부터 현재까지의 squash merge된 PR 제목 수집
-          changelog=$(git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD | grep -E "^.*\(#[0-9]+\)$" || echo "변경사항 없음")
+          # 최신 태그부터 현재까지의 메인 PR 제목 수집
+          main_pr=$(git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD | grep -E "^.*\(#[0-9]+\)$" || echo "변경사항 없음")
+
+          # develop 브랜치의 PR 제목들 수집
+          develop_prs=""
+          if [[ "$main_pr" == *"Develop merge"* ]]; then
+            # develop 브랜치의 마지막 머지 커밋 해시 찾기
+            develop_merge_hash=$(git log -1 --pretty=format:"%H" origin/develop)
+            
+            # develop 브랜치의 이전 태그나 머지 이후의 PR 제목들 수집
+            develop_prs=$(git log --pretty=format:"    - %s" origin/develop...$(git merge-base origin/develop HEAD) | grep -E "^.*\(#[0-9]+\)$" || echo "    - 변경사항 없음")
+          fi
+
+          # 최종 changelog 생성
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "$changelog" >> $GITHUB_OUTPUT
+          echo "$main_pr" >> $GITHUB_OUTPUT
+          if [[ ! -z "$develop_prs" ]]; then
+            echo "$develop_prs" >> $GITHUB_OUTPUT
+          fi
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create Release
